@@ -81,7 +81,6 @@ def observed_over_expected(df):
     oe = df / expected
     return oe
 
-
 def pmi(df, positive=True):
     df = observed_over_expected(df)
     # Silence distracting warnings about log(0):
@@ -92,6 +91,14 @@ def pmi(df, positive=True):
         df[df < 0] = 0.0
     return df
 
+def smoothed_pmi(df, positive=False, discounting=True):
+    col_sum = df.sum(axis = 0)
+    row_sum = df.sum(axis = 1)
+    smooth_factor = np.minimum.outer(col_sum.values, row_sum.values)
+    df_pmi = pmi(df, positive)    
+    laplace_factor = df/(df + 1) * (smooth_factor)/(smooth_factor + 1)
+    result = df_pmi * laplace_factor
+    return result
 
 def tfidf(df):
     # Inverse document frequencies:
